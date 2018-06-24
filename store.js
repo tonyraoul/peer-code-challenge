@@ -82,6 +82,13 @@ class ComandHandler{
             default:this.showHelp();
         }
     }
+    get(){
+        if(this.args.length != 2) {
+            this.showHelp();
+            return;
+        }
+        storeInstance.read(this.args[1]);
+    }
     add(){
         if(this.args.length != 3) {
             this.showHelp();
@@ -90,7 +97,7 @@ class ComandHandler{
         storeInstance.add(this.args[1],this.args[2]);
     }
     showHelp(){
-        console.log("Help: node store add [key] [value]");
+        console.log("Help: node store add [key] [value],node store get [key]");
     }
 }
 let storeInstance = new store();
