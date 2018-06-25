@@ -4,6 +4,7 @@
   "description": "admission task for trufla",
   "main": "store.js",
   "scripts": {
+    "store": "npm store.js"
   },
   "repository": {
     "type": "git",
