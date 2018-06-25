@@ -23,20 +23,18 @@ class StorageDriver{
 
 }
 class Store{
-    constructor(storageDriver){
+    constructor(){
         this.hasher = crypto.createHash("sha256");
-        this.storageDriver = storageDriver;
     }
     calculateHash(key) {
         return this.hasher.update(key).digest('hex').slice(0,4);
     }
-    add(key,value) {
+    async add(key,value) {
         const hash = this.calculateHash(key);
-        console.log(hash);
-        this.write(DATAFOLDERPATH+'/'+hash,key,value);
+        await this.write(DATAFOLDERPATH+'/'+hash,key,value);
     }
     async updateOrInsert(path,key,value){
-        const content = await this.StorageDriver.fileRead(path);
+        const content = await fileRead(path);
         const data = content.toString().split('\n'); //each line is a differenc key
         let found = false;
         for(let i=0;i<data.length;i++){
@@ -49,27 +47,26 @@ class Store{
             }
         }
         if (!found) {data.push(JSON.stringify({key:key,value:value}))}
-        await this.StorageDriver.writeToFile(path,data.join('\n'));
+        await writeToFile(path,data.join('\n'));
     }
     async write(path,key,value) {
         const storageString = JSON.stringify({key:key,value:value});
-        const _exists = await this.StorageDriver.fileExists(path);
+        const _exists = await fileExists(path);
         if(!_exists){
-            const file = await this.StorageDriver.appendFile(path,storageString);
+            const file = await appendFile(path,storageString);
         }
         else{
-            await this.StorageDriver.updateOrInsert(path,key,value);
-            console.log("updated");
+            await this.updateOrInsert(path,key,value);
         }
     }
     async remove(key){
         const path = DATAFOLDERPATH+this.calculateHash(key);
-        const exists = await this.StorageDriver.fileExists(path);
+        const exists = await fileExists(path);
         if(!exists) {
-            console.error("not found");
+            return null;
         }
         else {
-            const content = await this.storageDriver.fileRead(path);
+            const content = await fileRead(path);
             const data = content.toString().split('\n');
             let found = false;
             for(let i=0;i<data.length;i++){
@@ -81,51 +78,51 @@ class Store{
                 }
             }
             if(!found){
-                console.error("not found");
-                return;
+                return null;
             }
-            if(data.length>1) await this.storageDriver.writeToFile(path,data.join('\n'));
-            else await this.storageDriver.removeFile(path);
+            if(data.length>1) await writeToFile(path,data.join('\n'));
+            else await removeFile(path);
         }
     }
     async read(key){
         const path = DATAFOLDERPATH+this.calculateHash(key);
-        const exists = await this.storageDriver.fileExists(path);
+        const exists = await fileExists(path);
         if(!exists) {
-            console.error("not found");
+            return null;
         }
         else {
-            const content = await this.storageDriver.fileRead(path);
+            const content = await fileRead(path);
             const data = content.toString().split('\n');
             for(let i=0;i<data.length;i++){
                 let line = JSON.parse(data[i]);
                 if(line.key == key){
-                    console.log(line.value);
-                    break;
+                    return line.value;
                 }
             }
         }
 
     }
     async list(){
-        const allFiles = await this.StorageDriver.readdir(DATAFOLDERPATH);
+        const allFiles = await readdir(DATAFOLDERPATH);
+        let result = [];
         for(let i=0;i<allFiles.length;i++){
-            const content = await this.StorageDriver.fileRead(DATAFOLDERPATH+allFiles[i]);
+            const content = await fileRead(DATAFOLDERPATH+allFiles[i]);
             const data = content.toString().split('\n');
             for(let j=0;j<data.length;j++) {
                 const line = JSON.parse(data[j]);
-                console.log(`key:${line.key} value:${line.value}`);
+                result.push(line);
             }
         }
+        return result;
     }
     async clear(){
-        const allFiles = await this.StorageDriver.readdir(DATAFOLDERPATH);
+        const allFiles = await readdir(DATAFOLDERPATH);
         for(let i=0;i<allFiles.length;i++){
-            await this.StorageDriver.removeFile(DATAFOLDERPATH+allFiles[i]);
+            await removeFile(DATAFOLDERPATH+allFiles[i]);
         }
     }
 }
-class ComandHandler{
+class CommandHandler{
     constructor(args,storeInstance){
         this.args = args;
         switch(args[0]){
@@ -152,12 +149,15 @@ class ComandHandler{
             default:this.showHelp();
         }
     }
-    list(){
+    async list(){
         if(this.args.length != 1) {
             this.showHelp();
             return;
         }
-        storeInstance.list();
+        const result = await storeInstance.list();
+        result.forEach(line => {
+            console.log(`key:${line.key} value:${line.value}`);
+        });
     }
     remove(){
         if(this.args.length != 2) {
@@ -173,12 +173,13 @@ class ComandHandler{
         }
         storeInstance.clear();
     }
-    get(){
+    async get(){
         if(this.args.length != 2) {
             this.showHelp();
             return;
         }
-        storeInstance.read(this.args[1]);
+        const value = await storeInstance.read(this.args[1]);
+        console.log(value==null?value:"not found");
     }
     add(){
         if(this.args.length != 3) {
@@ -188,14 +189,10 @@ class ComandHandler{
         storeInstance.add(this.args[1],this.args[2]);
     }
     showHelp(){
-        console.log("Help: node store add [key] [value],node store get [key]");
+        console.log("Help: node store add [key] [value],node store get [key],node store remove [key],node store list, nodes store clear");
     }
 }
-let storeInstance = new Store(new storageDriver());
-let ch = new ComandHandler(process.argv.slice(2),storeInstance);
-exports.Store = function () {
-    return Store;
-};
-exports.ComandHandler = function () {
-    return ComandHandler;
-};
+let storeInstance = new Store();
+let ch = new CommandHandler(process.argv.slice(2),storeInstance);
+exports.Store = Store;
+exports.CommandHandler = CommandHandler;
