@@ -22,7 +22,7 @@ test:
   variables:
     NODE_ENV: "test"
   script:
-    - npm run mocha
+    - npm test
 release:
   stage: release
   image: docker:latest
