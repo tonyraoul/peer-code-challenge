@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 //Simple key/value fs store By:Antoine Raoul, code-challenge for trufla
 const crypto = require('crypto');
 const fs = require('fs');

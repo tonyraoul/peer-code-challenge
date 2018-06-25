@@ -5,7 +5,7 @@
   "main": "store.js",
   "scripts": {
     "store": "npm store.js",
-    "install": "chmod +x store.js",
+    "install": "chmod +x store",
     "test": "mocha"
   },
   "repository": {
