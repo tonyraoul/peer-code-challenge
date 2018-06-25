@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 //Simple key/value fs store By:Antoine Raoul, code-challenge for trufla
 const crypto = require('crypto');
 const fs = require('fs');
@@ -193,6 +192,6 @@ class CommandHandler{
     }
 }
 let storeInstance = new Store();
-let ch = new CommandHandler(process.argv.slice(2),storeInstance);
+new CommandHandler(process.argv.slice(2),storeInstance);
 exports.Store = Store;
 exports.CommandHandler = CommandHandler;
