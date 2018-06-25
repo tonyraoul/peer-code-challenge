@@ -5,7 +5,8 @@
   "main": "store.js",
   "scripts": {
     "store": "npm store.js",
-    "install": "chmod +x store.js"
+    "install": "chmod +x store.js",
+    "test": "mocha"
   },
   "repository": {
     "type": "git",
@@ -24,5 +25,10 @@
   "bugs": {
     "url": "https://gitlab.com/boriscosic/code-challenge-1/issues"
   },
-  "homepage": "https://gitlab.com/boriscosic/code-challenge-1#README"
+  "homepage": "https://gitlab.com/boriscosic/code-challenge-1#README",
+  "dependencies": {},
+  "devDependencies": {
+    "mocha": "^5.2.0",
+    "mock-fs": "^4.5.0"
+  }
 }
