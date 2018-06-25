@@ -11,9 +11,21 @@ const fileExists = promisify(fs.exists);
 const fileRead = promisify(fs.readFile);
 const readdir = promisify(fs.readdir);
 const removeFile = promisify(fs.unlink);
-class store{
+class StorageDriver{
     constructor(){
+        this.fileRead = fileRead;
+        this.writeFile = writeToFile;
+        this.readdir = readdir;
+        this.removeFile = removeFile;
+        this.fileExists = fileExists;
+        this.appendFile = appendFile;
+    }
+
+}
+class Store{
+    constructor(storageDriver){
         this.hasher = crypto.createHash("sha256");
+        this.storageDriver = storageDriver;
     }
     calculateHash(key) {
         return this.hasher.update(key).digest('hex').slice(0,4);
@@ -24,7 +36,7 @@ class store{
         this.write(DATAFOLDERPATH+'/'+hash,key,value);
     }
     async updateOrInsert(path,key,value){
-        const content = await fileRead(path);
+        const content = await this.StorageDriver.fileRead(path);
         const data = content.toString().split('\n'); //each line is a differenc key
         let found = false;
         for(let i=0;i<data.length;i++){
@@ -37,27 +49,27 @@ class store{
             }
         }
         if (!found) {data.push(JSON.stringify({key:key,value:value}))}
-        await writeToFile(path,data.join('\n'));
+        await this.StorageDriver.writeToFile(path,data.join('\n'));
     }
     async write(path,key,value) {
         const storageString = JSON.stringify({key:key,value:value});
-        const _exists = await fileExists(path);
+        const _exists = await this.StorageDriver.fileExists(path);
         if(!_exists){
-            const file = await appendFile(path,storageString);
+            const file = await this.StorageDriver.appendFile(path,storageString);
         }
         else{
-            await this.updateOrInsert(path,key,value);
+            await this.StorageDriver.updateOrInsert(path,key,value);
             console.log("updated");
         }
     }
     async remove(key){
         const path = DATAFOLDERPATH+this.calculateHash(key);
-        const exists = await fileExists(path);
+        const exists = await this.StorageDriver.fileExists(path);
         if(!exists) {
             console.error("not found");
         }
         else {
-            const content = await fileRead(path);
+            const content = await this.storageDriver.fileRead(path);
             const data = content.toString().split('\n');
             let found = false;
             for(let i=0;i<data.length;i++){
@@ -72,18 +84,18 @@ class store{
                 console.error("not found");
                 return;
             }
-            if(data.length>1) await writeToFile(path,data.join('\n'));
-            else await removeFile(path);
+            if(data.length>1) await this.storageDriver.writeToFile(path,data.join('\n'));
+            else await this.storageDriver.removeFile(path);
         }
     }
     async read(key){
         const path = DATAFOLDERPATH+this.calculateHash(key);
-        const exists = await fileExists(path);
+        const exists = await this.storageDriver.fileExists(path);
         if(!exists) {
             console.error("not found");
         }
         else {
-            const content = await fileRead(path);
+            const content = await this.storageDriver.fileRead(path);
             const data = content.toString().split('\n');
             for(let i=0;i<data.length;i++){
                 let line = JSON.parse(data[i]);
@@ -96,9 +108,9 @@ class store{
 
     }
     async list(){
-        const allFiles = await readdir(DATAFOLDERPATH);
+        const allFiles = await this.StorageDriver.readdir(DATAFOLDERPATH);
         for(let i=0;i<allFiles.length;i++){
-            const content = await fileRead(DATAFOLDERPATH+allFiles[i]);
+            const content = await this.StorageDriver.fileRead(DATAFOLDERPATH+allFiles[i]);
             const data = content.toString().split('\n');
             for(let j=0;j<data.length;j++) {
                 const line = JSON.parse(data[j]);
@@ -107,9 +119,9 @@ class store{
         }
     }
     async clear(){
-        const allFiles = await readdir(DATAFOLDERPATH);
+        const allFiles = await this.StorageDriver.readdir(DATAFOLDERPATH);
         for(let i=0;i<allFiles.length;i++){
-            await removeFile(DATAFOLDERPATH+allFiles[i]);
+            await this.StorageDriver.removeFile(DATAFOLDERPATH+allFiles[i]);
         }
     }
 }
@@ -179,5 +191,11 @@ class ComandHandler{
         console.log("Help: node store add [key] [value],node store get [key]");
     }
 }
-let storeInstance = new store();
+let storeInstance = new Store(new storageDriver());
 let ch = new ComandHandler(process.argv.slice(2),storeInstance);
+exports.Store = function () {
+    return Store;
+};
+exports.ComandHandler = function () {
+    return ComandHandler;
+};
