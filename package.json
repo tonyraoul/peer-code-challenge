@@ -1,0 +1,26 @@
+{
+  "name": "code-challenge",
+  "version": "1.0.0",
+  "description": "admission task for trufla",
+  "main": "store.js",
+  "scripts": {
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://gitlab.com/boriscosic/code-challenge-1.git"
+  },
+  "keywords": [
+    "hashmap",
+    "kv",
+    "key",
+    "value",
+    "store",
+    "fs"
+  ],
+  "author": "Antoine Raoul",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://gitlab.com/boriscosic/code-challenge-1/issues"
+  },
+  "homepage": "https://gitlab.com/boriscosic/code-challenge-1#README"
+}
