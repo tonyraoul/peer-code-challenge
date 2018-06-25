@@ -105,6 +105,12 @@ class store{
             }
         }
     }
+    async clear(){
+        const allFiles = await readdir(DATAFOLDERPATH);
+        for(let i=0;i<allFiles.length;i++){
+            await removeFile(DATAFOLDERPATH+allFiles[i]);
+        }
+    }
 }
 class ComandHandler{
     constructor(args,storeInstance){
@@ -126,6 +132,10 @@ class ComandHandler{
                 this.remove();
                 break;
             }
+            case 'clear': {
+                this.clear();
+                break;
+            }
             default:this.showHelp();
         }
     }
@@ -142,6 +152,13 @@ class ComandHandler{
             return;
         }
         storeInstance.remove(this.args[1]);
+    }
+    clear(){
+        if(this.args.length != 1) {
+            this.showHelp();
+            return;
+        }
+        storeInstance.clear();
     }
     get(){
         if(this.args.length != 2) {
