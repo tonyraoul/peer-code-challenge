@@ -22,6 +22,7 @@ test:
   variables:
     NODE_ENV: "test"
   script:
+    - npm install --dev
     - npm test
 release:
   stage: release
