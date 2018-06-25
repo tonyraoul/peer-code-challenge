@@ -4,7 +4,8 @@
   "description": "admission task for trufla",
   "main": "store.js",
   "scripts": {
-    "store": "npm store.js"
+    "store": "npm store.js",
+    "install": "chmod +x store.js"
   },
   "repository": {
     "type": "git",
