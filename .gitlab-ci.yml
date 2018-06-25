@@ -12,7 +12,7 @@ build:
   image: node:8-alpine
   variables:
     NODE_ENV: "development"
-    script:
+  script:
     - apk add --update bash
     - apk add --update git && rm -rf /tmp/* /var/cache/apk/*
     - npm install
