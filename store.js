@@ -8,6 +8,7 @@ const appendFile = promisify(fs.appendFile);
 const writeToFile = promisify(fs.writeFile);
 const fileExists = promisify(fs.exists);
 const fileRead = promisify(fs.readFile);
+const readdir = promisify(fs.readdir);
 class store{
     constructor(){
         this.hasher = crypto.createHash("sha256");
@@ -66,6 +67,17 @@ class store{
         }
 
     }
+    async list(){
+        const allFiles = await readdir(DATAFOLDERPATH);
+        for(let i=0;i<allFiles.length;i++){
+            const content = await fileRead(DATAFOLDERPATH+allFiles[i]);
+            const data = content.toString().split('\n');
+            for(let j=0;j<data.length;j++) {
+                const line = JSON.parse(data[j]);
+                console.log(`key:${line.key} value:${line.value}`);
+            }
+        }
+    }
 }
 class ComandHandler{
     constructor(args,storeInstance){
@@ -79,8 +91,19 @@ class ComandHandler{
                 this.get();
                 break;
             }
+            case 'list': {
+                this.list();
+                break;
+            }
             default:this.showHelp();
         }
+    }
+    list(){
+        if(this.args.length != 1) {
+            this.showHelp();
+            return;
+        }
+        storeInstance.list();
     }
     get(){
         if(this.args.length != 2) {
