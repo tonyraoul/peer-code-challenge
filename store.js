@@ -9,6 +9,7 @@ const writeToFile = promisify(fs.writeFile);
 const fileExists = promisify(fs.exists);
 const fileRead = promisify(fs.readFile);
 const readdir = promisify(fs.readdir);
+const removeFile = promisify(fs.unlink);
 class store{
     constructor(){
         this.hasher = crypto.createHash("sha256");
@@ -46,6 +47,32 @@ class store{
         else{
             await this.updateOrInsert(path,key,value);
             console.log("updated");
+        }
+    }
+    async remove(key){
+        const path = DATAFOLDERPATH+this.calculateHash(key);
+        const exists = await fileExists(path);
+        if(!exists) {
+            console.error("not found");
+        }
+        else {
+            const content = await fileRead(path);
+            const data = content.toString().split('\n');
+            let found = false;
+            for(let i=0;i<data.length;i++){
+                let line = JSON.parse(data[i]);
+                if(line.key == key){
+                    found = true;
+                    data.splice(i, 1);
+                    break;
+                }
+            }
+            if(!found){
+                console.error("not found");
+                return;
+            }
+            if(data.length>1) await writeToFile(path,data.join('\n'));
+            else await removeFile(path);
         }
     }
     async read(key){
@@ -95,6 +122,10 @@ class ComandHandler{
                 this.list();
                 break;
             }
+            case 'remove': {
+                this.remove();
+                break;
+            }
             default:this.showHelp();
         }
     }
@@ -104,6 +135,13 @@ class ComandHandler{
             return;
         }
         storeInstance.list();
+    }
+    remove(){
+        if(this.args.length != 2) {
+            this.showHelp();
+            return;
+        }
+        storeInstance.remove(this.args[1]);
     }
     get(){
         if(this.args.length != 2) {
