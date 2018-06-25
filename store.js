@@ -193,6 +193,6 @@ class CommandHandler{
     }
 }
 let storeInstance = new Store();
-let ch = new CommandHandler(process.argv.slice(2),storeInstance);
+new CommandHandler(process.argv.slice(2),storeInstance);
 exports.Store = Store;
 exports.CommandHandler = CommandHandler;

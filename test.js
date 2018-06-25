@@ -1,7 +1,7 @@
 const mockfs = require('mock-fs');
 const assert = require('assert');
 const Store = require('./store').Store;
-const ComandHandler = require('./store').ComandHandler;
+const CommandHandler = require('./store').CommandHandler;
 describe('Store', function() {
   describe('#get', function() {
     it('should find correct value', async function() {
