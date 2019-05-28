@@ -30,4 +30,3 @@ Commit and track your work history in a new GitLab repo. Once finished email the
 - Write clean, modular and testable code. (done)
 - Instead of running `node store.js` alter the runtime so it can be run as `./store`. (done)
 - Add ability to deploy in Docker container. (done)
-- Add GitLab compatible CI/CD to perform a server deploy. (done)
